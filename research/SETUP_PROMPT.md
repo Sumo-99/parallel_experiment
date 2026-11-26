@@ -46,3 +46,6 @@ and diff `agents.md` before each batch of runs.
   `source_policy.after_date`).
 - Step 5: results have no score; keep the order.
 - Onboarding step 5 may offer a note to support@parallel.ai.
+
+## Re-check before runs (2026-11-26 ~14:25Z)
+agents.md identical to saved copy; skills repo HEAD still dd80868e. Live Exa /search results carry keys author,id,publishedDate,title,url only: no `score`, confirming check 4 is N/A for Exa.
