@@ -94,7 +94,10 @@ def create(app: str, keys: dict[str, str], base_parent: Path | None = None, temp
 
     # a working dev environment, as a developer's checkout would have
     venv_env = {"HOME": str(home), "PATH": SYSTEM_PATH, "TMPDIR": str(tmp)}
-    uv_env = {**venv_env, "PATH": f"{Path(UV).parent}:{SYSTEM_PATH}", "UV_CACHE_DIR": str(Path.home() / ".cache" / "uv")}
+    # setup-only network passthrough (cloud sandboxes reach PyPI via an egress proxy); never given to the agent
+    passthru = {k: os.environ[k] for k in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "NO_PROXY", "no_proxy",
+                                           "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "UV_NATIVE_TLS", "UV_SYSTEM_CERTS") if k in os.environ}
+    uv_env = {**venv_env, **passthru, "PATH": f"{Path(UV).parent}:{SYSTEM_PATH}", "UV_CACHE_DIR": str(Path.home() / ".cache" / "uv")}
     _run([UV, "venv", "-q", "--seed", "-p", PYTHON, ".venv"], app_dir, uv_env)
     _run([UV, "pip", "install", "-q", "-p", ".venv/bin/python", "-e", ".[dev]"], app_dir, uv_env)
     # sanity: the app's own tests pass before the agent starts
