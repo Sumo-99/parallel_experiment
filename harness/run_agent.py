@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from harness import fsstate  # noqa: E402
 from harness.common import (  # noqa: E402
     AGENT_MODEL, APP_SPECS, RUNS, SETUP_PROMPT, Blocked, claim_agent_run, finish_agent_run, load_keys, search_spend_usd,
 )
@@ -161,6 +162,7 @@ async def drive(ws, run_dir: Path, rec: Recorder, env: dict, provider: str) -> d
     )
 
     last_text = ""
+    tool_calls: dict[str, tuple[str, float]] = {}
     async with ClaudeSDKClient(options=options) as client:
         rec.log("user_message", text=SETUP_PROMPT, source="setup_prompt")
         await client.query(SETUP_PROMPT)
@@ -176,6 +178,7 @@ async def drive(ws, run_dir: Path, rec: Recorder, env: dict, provider: str) -> d
                                 state["final_report_seen"] = True
                         elif isinstance(b, ToolUseBlock):
                             rec.log("tool_use", id=b.id, name=b.name, input=b.input)
+                            tool_calls[b.id] = (b.name, time.time())
                         elif isinstance(b, ThinkingBlock):
                             rec.log("thinking", text=b.thinking[:4000])
                 elif isinstance(msg, UserMessage):
@@ -184,6 +187,9 @@ async def drive(ws, run_dir: Path, rec: Recorder, env: dict, provider: str) -> d
                         if isinstance(b, ToolResultBlock):
                             out = b.content if isinstance(b.content, str) else json.dumps(b.content, default=str)
                             rec.log("tool_result", tool_use_id=b.tool_use_id, is_error=b.is_error, output=(out or "")[:8000])
+                            call = tool_calls.get(b.tool_use_id)
+                            if call and call[0] in ("Bash", "Edit", "Write", "MultiEdit", "NotebookEdit"):
+                                rec.log("fs_state", tool_use_id=b.tool_use_id, started_ts=call[1], files=fsstate.capture(ws.app_dir, run_dir))
                 elif isinstance(msg, SystemMessage):
                     rec.log("system", subtype=msg.subtype, data={k: v for k, v in (msg.data or {}).items() if k not in ("apiKeySource",)})
                 elif isinstance(msg, ResultMessage):
@@ -218,7 +224,7 @@ def main() -> int:
     ap.add_argument("--app", choices=sorted(APP_SPECS), required=True)
     ap.add_argument("--setup-only", action="store_true", help="build the workspace and proxy, run nothing, call no API")
     ap.add_argument("--label", default="")
-    ap.add_argument("--mock", choices=["good", "bad"], help="MOCK end-to-end dry run: scripted fake model (no Anthropic calls), stubbed search APIs; $0, not counted")
+    ap.add_argument("--mock", choices=["good", "bad", "good_sed"], help="MOCK end-to-end dry run: scripted fake model (no Anthropic calls), stubbed search APIs; $0, not counted")
     args = ap.parse_args()
     spec = APP_SPECS[args.app]
 
@@ -270,7 +276,7 @@ def main() -> int:
                 from validation.mock_scenarios import scenario
                 qf = ws.app_dir / spec["queries_file"]
                 qs = [l.strip() for l in qf.read_text().splitlines() if l.strip() and not l.startswith("#")]
-                mock = MockAnthropic(scenario(args.mock, qs)).start()
+                mock = MockAnthropic(scenario(args.app, args.mock, qs)).start()
                 env["ANTHROPIC_BASE_URL"] = mock.url
             result = asyncio.run(asyncio.wait_for(drive(ws, run_dir, rec, env, spec["provider"]), RUN_TIMEOUT_S))
             status = result["stop_reason"]

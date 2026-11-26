@@ -1,0 +1,29 @@
+{
+  "search_id": "search_mock_fixture",
+  "results": [
+    {
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41187",
+      "title": "NVD - CVE-2026-41187",
+      "publish_date": "2026-10-21",
+      "excerpts": [
+        "Out-of-bounds read in OpenSSL 3.4 and 3.5."
+      ]
+    },
+    {
+      "url": "https://www.bleepingcomputer.com/news/security/openssl-patch/",
+      "title": "OpenSSL patches flaw",
+      "publish_date": "2026-10-22",
+      "excerpts": [
+        "Patch released."
+      ]
+    },
+    {
+      "url": "https://github.com/openssl/openssl/security/advisories/GHSA-9x4m",
+      "title": "OpenSSL advisory",
+      "publish_date": "2026-10-21",
+      "excerpts": [
+        "Advisory text."
+      ]
+    }
+  ]
+}

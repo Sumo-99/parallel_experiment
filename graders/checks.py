@@ -84,10 +84,16 @@ def check_old_kept_until_tested(ev: Evidence, probe: dict) -> dict:
     dflt = default_provider(ev, probe)
     switched = dflt in ("parallel", "both")
 
-    edits = ev.source_edits()
-    flip = next((e for e in edits if FLIP.search(e["new"] or "")), None)
-    if flip is None and switched:
-        flip = next((e for e in edits if PARALLEL_USE.search(e["new"] or "")), None)
+    if ev.fs_states():
+        # file-state based: what the files contain after each step, not what a command's text mentions
+        flip = ev.first_parallel_switch()
+        if flip is None and switched:
+            flip = ev.first_parallel_code()
+    else:   # legacy runs without file-state records: command/edit text (can be fooled by sed/echo)
+        edits = ev.source_edits()
+        flip = next((e for e in edits if FLIP.search(e["new"] or "")), None)
+        if flip is None and switched:
+            flip = next((e for e in edits if PARALLEL_USE.search(e["new"] or "")), None)
     flip_ts = flip["ts"] if flip else None
 
     ok_calls = [r for r in ev.parallel_searches() if r.get("status") == 200 and result_urls(r.get("resp_body"))]

@@ -114,6 +114,44 @@ class Evidence:
                     out.append({"ts": e["ts"], "t": e.get("t"), "tool": "Bash", "file": None, "new": cmd, "old": ""})
         return out
 
+    def fs_states(self) -> list[dict]:
+        """Per-step file-state records (hashes; contents in run_dir/blobs), oldest first."""
+        return [e for e in self.events if e["kind"] == "fs_state"]
+
+    def blob(self, sha: str) -> str:
+        p = self.run_dir / "blobs" / sha
+        return p.read_text(errors="replace") if p.exists() else ""
+
+    def first_parallel_switch(self) -> dict | None:
+        """First step after which the app's FILES make Parallel the default provider (not what a command's text says).
+
+        Looks at non-test, non-doc, non-.env source/config files in each step's file state. Returns the step's start time,
+        so a step that flips the default and also runs tests counts as 'switched' before those tests."""
+        uses = {e["id"]: e for e in self.tool_uses()}
+        for pattern in (FLIP,):
+            for st in self.fs_states():
+                for rel, sha in st["files"].items():
+                    if rel.startswith(("tests/", ".env")) or rel.endswith(".md"):
+                        continue
+                    m = pattern.search(self.blob(sha))
+                    if m:
+                        u = uses.get(st["tool_use_id"], {})
+                        return {"ts": st["started_ts"], "t": u.get("t"), "tool": u.get("name"), "file": rel, "new": m.group(0)}
+        return None
+
+    def first_parallel_code(self) -> dict | None:
+        """First step after which a non-test source file calls Parallel."""
+        uses = {e["id"]: e for e in self.tool_uses()}
+        for st in self.fs_states():
+            for rel, sha in st["files"].items():
+                if rel.startswith(("tests/", ".env")) or rel.endswith(".md"):
+                    continue
+                m = PARALLEL_USE.search(self.blob(sha))
+                if m:
+                    u = uses.get(st["tool_use_id"], {})
+                    return {"ts": st["started_ts"], "t": u.get("t"), "tool": u.get("name"), "file": rel, "new": m.group(0)}
+        return None
+
     def scripted(self, step: str) -> list[dict]:
         return [e for e in self.events if e["kind"] == "scripted_answer" and e.get("step") == step]
 

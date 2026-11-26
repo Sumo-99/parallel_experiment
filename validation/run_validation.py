@@ -26,6 +26,7 @@ sys.path.insert(0, str(ROOT))
 from graders.grade import grade, render  # noqa: E402
 from harness import workspace as wsmod  # noqa: E402
 from harness.common import RUNS, SETUP_PROMPT, load_keys  # noqa: E402
+from harness import fsstate  # noqa: E402
 from harness.proxy import Proxy  # noqa: E402
 
 MIG = ROOT / "validation" / "migrations"
@@ -51,7 +52,9 @@ for q in {queries!r}:
 
 
 class Timeline:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, app_dir: Path | None = None):
+        self.run_dir = path.parent
+        self.app_dir = app_dir
         self.f = path.open("w")
         self.t0 = time.time()
         self.n = 0
@@ -63,6 +66,7 @@ class Timeline:
 
     def edit(self, app_dir: Path, rel: str, src: Path):
         self.n += 1
+        t_start = time.time()
         new = src.read_text()
         old = (app_dir / rel).read_text() if (app_dir / rel).exists() else ""
         self.log("tool_use", id=f"toolu_{self.n}", name="Write" if not old else "Edit",
@@ -70,13 +74,20 @@ class Timeline:
         (app_dir / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(src, app_dir / rel)
         self.log("tool_result", tool_use_id=f"toolu_{self.n}", is_error=False, output="ok")
+        self._state(f"toolu_{self.n}", t_start)
 
     def bash(self, app_dir: Path, cmd_display: str, argv: list[str], env: dict):
         self.n += 1
+        t_start = time.time()
         self.log("tool_use", id=f"toolu_{self.n}", name="Bash", input={"command": cmd_display})
         r = subprocess.run(argv, cwd=app_dir, env=env, capture_output=True, text=True)
         self.log("tool_result", tool_use_id=f"toolu_{self.n}", is_error=r.returncode != 0, output=(r.stdout + r.stderr)[-4000:])
+        self._state(f"toolu_{self.n}", t_start)
         return r
+
+    def _state(self, tool_use_id, started_ts):
+        if self.app_dir:
+            self.log("fs_state", tool_use_id=tool_use_id, started_ts=started_ts, files=fsstate.capture(self.app_dir, self.run_dir))
 
 
 def build(variant: str, stub: bool) -> Path:
@@ -97,7 +108,7 @@ def build(variant: str, stub: bool) -> Path:
         "validation": True, "stub": stub}, indent=2))
     queries = [l.strip() for l in (app / "queries.txt").read_text().splitlines() if l.strip() and not l.startswith("#")]
 
-    tl = Timeline(run_dir / "events.jsonl")
+    tl = Timeline(run_dir / "events.jsonl", app)
     tl.log("user_message", text=SETUP_PROMPT, source="setup_prompt")
     with Proxy(run_dir / "proxy.jsonl", f"validation-{variant}", stub=stub) as proxy:
         proxy.write_ca_bundle(ws.ca_bundle)
