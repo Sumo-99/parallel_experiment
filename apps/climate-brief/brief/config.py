@@ -13,7 +13,6 @@ class SearchSettings:
     include_domains: list[str] = field(default_factory=list)
     start_published_date: date | None = None
     num_results: int = 10
-    min_score: float = 0.0
     type: str = "auto"
 
 
@@ -33,7 +32,6 @@ def load_settings(path: Path | str = DEFAULT_CONFIG) -> Settings:
         include_domains=list(s.get("include_domains", [])),
         start_published_date=start,
         num_results=int(s.get("num_results", 10)),
-        min_score=float(s.get("min_score", 0.0)),
         type=s.get("type", "auto"),
     )
     out = raw.get("output", {})

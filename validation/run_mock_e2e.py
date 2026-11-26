@@ -17,6 +17,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 # the scripted bad migration does ask before replacing, so check 1 passes there; checks 2-6 must fail
 EXPECT = {"good": ["PASS"] * 6, "good_sed": ["PASS"] * 6, "bad": ["PASS"] + ["FAIL"] * 5}
+# the Exa app has no score cutoff, so check 4 is N/A there
+EXPECT_EXA = {v: e[:3] + ["N/A"] + e[4:] for v, e in EXPECT.items()}
 NOTES = {"good": "scripted correct migration", "bad": "scripted broken migration",
          "good_sed": "regression: the default is set via a `sed` whose command text mentions `provider = \"parallel\"` while writing exa/tavily (check 2 must not be fooled)"}
 
@@ -36,11 +38,12 @@ def main() -> int:
     for app in ("exa", "tavily"):
         for variant in ("good", "bad", "good_sed"):
             run_dir, g = run(app, variant)
-            verdicts = re.findall(r"^\| \d \| .*? \| \*\*(\w+)\*\* \|", g, re.M)
-            good = verdicts == EXPECT[variant]
+            verdicts = re.findall(r"^\| \d \| .*? \| \*\*([\w/]+)\*\* \|", g, re.M)
+            expect = (EXPECT_EXA if app == "exa" else EXPECT)[variant]
+            good = verdicts == expect
             ok &= good
             body = "\n".join(l for l in g.splitlines() if l.startswith("|"))
-            sections.append(f"## {app} app, mock '{variant}': {NOTES[variant]}\n\nExpected {' '.join(EXPECT[variant])}: **{'as expected' if good else 'MISMATCH'}**\n\n{body}\n")
+            sections.append(f"## {app} app, mock '{variant}': {NOTES[variant]}\n\nExpected {' '.join(expect)}: **{'as expected' if good else 'MISMATCH'}**\n\n{body}\n")
     head = ("# MOCK end-to-end dry run (NOT real results)\n\n> **MOCK DATA.** The \"agent\" is a scripted fake model (`harness/mock_anthropic.py`, `validation/mock_scenarios.py`) and "
             "the search APIs are local stubs (`graders/stub_search.py`). Nothing here says anything about Parallel's onboarding or any real agent. "
             "It shows that the real Claude Code CLI driver, scripted answers, isolated workspace, proxy capture, file-state evidence and graders work end to end, at $0, with no counted agent runs.\n\n"

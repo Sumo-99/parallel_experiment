@@ -41,16 +41,18 @@ class AppSettings:
     domains: list[str]
     start_date: str | None
     limit: int
-    min_score: float
+    min_score: float | None
 
 
 def read_settings(app: str, app_dir: Path) -> AppSettings | None:
     try:
         if app == "exa":
             s = tomllib.loads((app_dir / "config.toml").read_text())["search"]
-            return AppSettings(list(s["include_domains"]), str(s.get("start_published_date")), int(s["num_results"]), float(s["min_score"]))
+            return AppSettings(list(s["include_domains"]), str(s.get("start_published_date")), int(s["num_results"]),
+                               float(s["min_score"]) if "min_score" in s else None)
         s = json.loads((app_dir / "settings.json").read_text())["search"]
-        return AppSettings(list(s["include_domains"]), s.get("start_date"), int(s["max_results"]), float(s["min_score"]))
+        return AppSettings(list(s["include_domains"]), s.get("start_date"), int(s["max_results"]),
+                           float(s["min_score"]) if "min_score" in s else None)
     except Exception:
         return None
 

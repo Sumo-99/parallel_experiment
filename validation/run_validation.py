@@ -140,8 +140,7 @@ def build(variant: str, stub: bool) -> Path:
                       "(https://techcrunch.com/2026/10/14/ldes-series-b/)\n"
                       "Changed: brief/search.py, brief/config.py, brief/cli.py, config.toml, README.md, tests/test_cli.py, tests/test_parallel.py, "
                       "tests/fixtures/parallel_storage.json\n"
-                      "Next: Exa is kept as a fallback (set provider = \"exa\"). Parallel results have no relevance score, so min_score "
-                      "now only applies when provider is exa; the domain filter, start date and result limit are mapped to source_policy and max_results.")
+                      "Next: Exa is kept as a fallback (set provider = \"exa\"). The domain filter, start date and result limit are mapped to source_policy and max_results.")
         else:
             b = MIG / "broken"
             for rel in ("brief/search.py", "brief/cli.py"):

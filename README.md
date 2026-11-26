@@ -27,7 +27,7 @@ the apps mentions the experiment.
 | Domain filter | `config.toml` `include_domains` (6 outlets) | `settings.json` `include_domains` (6 sources) |
 | Start date | `start_published_date = 2026-09-01` | `start_date = 2026-10-01` |
 | Result limit | `num_results = 8` | `max_results = 6` |
-| Score cutoff | `min_score = 0.18` (unscored hits kept) | `min_score = 0.45` |
+| Score cutoff | none | `min_score = 0.45` |
 | Run it | `python -m brief --json` | `python -m vulnwatch --stdout` |
 
 **Fixture caveat:** the current fixtures are hand-written in each API's documented

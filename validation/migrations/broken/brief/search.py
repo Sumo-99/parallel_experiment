@@ -55,7 +55,7 @@ class ParallelSearch:
         if resp.status_code != 200:
             raise SearchError(f"Parallel returned {resp.status_code}")
         results = resp.json().get("results", [])
-        # Parallel has no score; synthesize one from rank so min_score keeps working.
+        # Parallel has no score; synthesize one from rank.
         return [
             Hit(
                 title=r.get("title") or r["url"],

@@ -16,11 +16,6 @@ include_domains = [
 ]
 start_published_date = "2026-09-01"
 num_results = 8
-# Results scored below this are too loosely related to the query to be worth
-# an analyst's time. Tuned on the Q2 briefs.
-min_score = 0.18
-# Note: Parallel results are ranked but have no relevance score, so min_score
-# only filters results when provider = "exa".
 
 [output]
 max_items_per_section = 5

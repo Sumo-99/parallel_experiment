@@ -158,6 +158,8 @@ def _synthetic(scores: list[float]) -> bool:
 
 
 def check_score_cutoff(ev: Evidence, probe: dict) -> dict:
+    if ev.app == "exa":   # the Exa app has no score cutoff, so there is nothing to handle
+        return _v(NA, "Not applicable: this app has no score cutoff.")
     dflt = default_provider(ev, probe)
     final_settings = read_settings(ev.app, ev.final)
     files = source_files(ev.final)

@@ -15,27 +15,19 @@ log = logging.getLogger(__name__)
 class Section:
     query: str
     items: list[Hit] = field(default_factory=list)
-    dropped_low_score: int = 0
 
 
-def apply_score_cutoff(hits: list[Hit], min_score: float) -> tuple[list[Hit], int]:
-    """Drop hits scored below min_score. Hits without a score are kept."""
-    kept = [h for h in hits if h.score is None or h.score >= min_score]
-    return kept, len(hits) - len(kept)
-
-
-def build_sections(results: dict[str, list[Hit]], min_score: float, max_items: int) -> list[Section]:
+def build_sections(results: dict[str, list[Hit]], max_items: int) -> list[Section]:
     seen: set[str] = set()
     sections = []
     for query, hits in results.items():
-        kept, dropped = apply_score_cutoff(hits, min_score)
         unique = []
-        for h in kept:
+        for h in hits:
             if h.url in seen:
                 continue
             seen.add(h.url)
             unique.append(h)
-        sections.append(Section(query=query, items=unique[:max_items], dropped_low_score=dropped))
+        sections.append(Section(query=query, items=unique[:max_items]))
     return sections
 
 

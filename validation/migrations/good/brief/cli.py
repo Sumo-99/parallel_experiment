@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
-    sections = build_sections(results, settings.search.min_score, settings.max_items_per_section)
+    sections = build_sections(results, settings.max_items_per_section)
     if args.json:
         print(to_json(sections))
         return 0

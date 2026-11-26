@@ -31,7 +31,6 @@ python -m brief --queries my.txt      # custom query list
 | `start_published_date` | Ignore articles published before this date |
 | `num_results` | Results requested per query |
 | `provider` | `parallel` (default) or `exa` |
-| `min_score` | Results with a relevance score below this are dropped (Exa only: Parallel returns no score) |
 | `max_items_per_section` | Cap on items shown per query in the brief |
 
 ## Tests

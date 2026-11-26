@@ -30,7 +30,6 @@ python -m brief --queries my.txt      # custom query list
 | `include_domains` | Only these outlets are searched |
 | `start_published_date` | Ignore articles published before this date |
 | `num_results` | Results requested per query |
-| `min_score` | Results with a relevance score below this are dropped |
 | `max_items_per_section` | Cap on items shown per query in the brief |
 
 ## Tests

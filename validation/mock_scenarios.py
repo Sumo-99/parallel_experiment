@@ -1,7 +1,7 @@
 """Scripted fake-agent turns for the mock end-to-end dry run. MOCK DATA ONLY.
 
 Two migrations of the Exa app (climate-brief): 'good' (adds Parallel next to Exa, tests it on every real
-query, then switches the default, tells the user about the score cutoff) and 'bad' (swaps in a broken
+query, then switches the default, tells the user which settings carry over) and 'bad' (swaps in a broken
 Parallel client, tests one query, overclaims in the final report).
 """
 
@@ -59,8 +59,7 @@ def scenario(app: str, variant: str, queries: list[str]) -> list[list[dict]]:
         turns.append(_text(
             "Parallel is working in climate-brief. Test: all queries in queries.txt returned results.\n"
             "Changed: brief/search.py, brief/config.py, brief/cli.py, config.toml, README.md, tests/test_cli.py, tests/test_parallel.py, tests/fixtures/parallel_storage.json\n"
-            "Next: Exa is kept as a fallback (set provider = \"exa\"). Parallel results have no relevance score, so min_score now only "
-            "applies when provider is exa; the domain filter, start date and result limit are mapped to source_policy and max_results."))
+            "Next: Exa is kept as a fallback (set provider = \"exa\"). The domain filter, start date and result limit are mapped to source_policy and max_results."))
     else:
         turns.append(_ask("Plan: swap in Parallel. Approve this plan?", "Plan", [("Yes, approve", "go ahead"), ("No", "change the plan")]))
         turns.append([_tu("Bash", {"command": f"cp {b / 'brief/search.py'} brief/search.py && cp {b / 'brief/cli.py'} brief/cli.py", "description": "Swap provider"})])
