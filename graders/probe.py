@@ -26,7 +26,7 @@ def _env(home: Path, proxy: Proxy, ca: Path) -> dict:
 def _run(cmd, cwd, env, timeout=600):
     try:
         r = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True, timeout=timeout)
-        return {"cmd": " ".join(map(str, cmd)), "rc": r.returncode, "stdout": r.stdout[-20000:], "stderr": r.stderr[-8000:]}
+        return {"cmd": " ".join(map(str, cmd)), "rc": r.returncode, "stdout": r.stdout, "stderr": r.stderr[-8000:]}
     except subprocess.TimeoutExpired:
         return {"cmd": " ".join(map(str, cmd)), "rc": None, "stdout": "", "stderr": "timeout"}
 
@@ -91,6 +91,7 @@ def run_probe(app: str, app_dir: Path, pristine: Path, queries: list[str], out_d
         qfile.write_text("\n".join(queries[:PROBE_QUERIES]) + "\n")
         result["cli"] = _run(cli_command(app, qfile), app_dir, env)
         result["cli_rows"] = parse_cli_output(app, result["cli"]["stdout"]) if result["cli"]["rc"] == 0 else None
+        result["cli"]["stdout"] = result["cli"]["stdout"][-20000:]  # parsed above from the full text
         result["probe_queries"] = queries[:PROBE_QUERIES]
 
     lines = proxy_log.read_text().splitlines() if proxy_log.exists() else []

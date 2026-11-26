@@ -48,6 +48,14 @@ def _scrub(obj):
     return obj
 
 
+def _decoded(msg):
+    """Body with Content-Encoding (gzip etc.) removed; raw bytes if that fails."""
+    try:
+        return msg.content
+    except Exception:
+        return msg.raw_content
+
+
 def _json(raw: bytes | None):
     if not raw:
         return None
@@ -104,7 +112,7 @@ class SearchCapture:
         if host not in SEARCH_HOSTS:
             return
         flow.metadata["pe_ts"] = time.time()
-        body = _json(flow.request.raw_content)
+        body = _json(_decoded(flow.request))
         usd = 0.0 if STUB or flow.request.method == "GET" else estimate_usd(host, flow.request.path, body)
         flow.metadata["pe_usd"] = usd
         if usd and _spent() + usd > CAP:
@@ -133,9 +141,9 @@ class SearchCapture:
             "path": flow.request.path,
             "req_headers": headers,
             "auth_header_present": any(k.lower() in SECRET_HEADERS for k in flow.request.headers.keys()),
-            "req_body": _json(flow.request.raw_content),
+            "req_body": _json(_decoded(flow.request)),
             "status": flow.response.status_code if flow.response else None,
-            "resp_body": _json(flow.response.raw_content) if flow.response else None,
+            "resp_body": _json(_decoded(flow.response)) if flow.response else None,
             "est_usd": usd,
             "blocked_by_cap": blocked,
             "stub": bool(flow.metadata.get("pe_stub")),
