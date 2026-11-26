@@ -67,6 +67,9 @@ def load_keys(required: list[str]) -> dict[str, str]:
     found, missing = {}, []
     for name in required:
         val = next((src.get(name) for src in sources if src.get(name)), None)
+        # The platform hides ANTHROPIC_API_KEY in some cloud sessions; the key is then stored as PE_ANTHROPIC_API_KEY.
+        if not val and name == "ANTHROPIC_API_KEY":
+            val = next((src.get("PE_ANTHROPIC_API_KEY") for src in sources if src.get("PE_ANTHROPIC_API_KEY")), None)
         if val:
             found[name] = val
         else:

@@ -58,7 +58,7 @@ def _reexec_clean() -> None:
         "TMPDIR": "/tmp",
     }
     for k in ("PE_KEYS_FILE", "PE_PYTHON", "PE_NODE_BIN", "PE_UV",
-              "ANTHROPIC_API_KEY", "EXA_API_KEY", "TAVILY_API_KEY", "PARALLEL_API_KEY",
+              "ANTHROPIC_API_KEY", "PE_ANTHROPIC_API_KEY", "EXA_API_KEY", "TAVILY_API_KEY", "PARALLEL_API_KEY",
               # egress-proxy settings of sandboxed environments: used by the harness (setup, mitmdump upstream), never given to the agent
               "HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "NO_PROXY", "no_proxy", "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "UV_NATIVE_TLS", "UV_SYSTEM_CERTS"):
         if os.environ.get(k):
