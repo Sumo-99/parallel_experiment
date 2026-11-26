@@ -39,7 +39,7 @@ def build_script(provider: str) -> list[Step]:
              "2. Add Parallel to a new or existing app"),
         Step("approve_plan",
              _r(r"\bplan\b.{0,600}(go ahead|proceed|approve|sound good|ok\?|okay\?)|\b(go ahead|shall i proceed|should i proceed|ready to proceed|approve (this|the) plan)\b.{0,40}\?"),
-             _r(r"^\s*(yes|approve|go ahead|proceed)"),
+             _r(r"^\s*(yes|approve|go ahead|proceed)|\(recommended\)|go ahead"),
              "Yes, go ahead."),
         Step("replace_or_keep",
              _r(rf"(replace\s+{provider}|keep\s+{provider})|uses\s+{provider}.{{0,80}}what should i do"),
