@@ -54,7 +54,9 @@ class Workspace:
 
 
 def _run(cmd, cwd, env=None):
-    subprocess.run(cmd, cwd=cwd, env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    r = subprocess.run(cmd, cwd=cwd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    if r.returncode:
+        raise RuntimeError(f"setup step failed ({' '.join(map(str, cmd))[:120]}): {r.stderr[-1500:]}")
 
 
 def create(app: str, keys: dict[str, str], base_parent: Path | None = None, template_dir: Path | None = None) -> Workspace:

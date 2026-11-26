@@ -2,7 +2,7 @@
 
   uv run python -m validation.run_mock_e2e
 
-Expected verdicts: good / good_sed -> all PASS; bad -> all FAIL. Writes validation/MOCK_E2E_REPORT.md.
+Expected verdicts: good / good_sed -> all PASS; bad -> check 1 PASS (it asks first), checks 2-6 FAIL. Writes validation/MOCK_E2E_REPORT.md.
 Everything it produces is MOCK DATA and says nothing about Parallel or any real agent.
 """
 
@@ -15,7 +15,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-EXPECT = {"good": "PASS", "good_sed": "PASS", "bad": "FAIL"}
+# the scripted bad migration does ask before replacing, so check 1 passes there; checks 2-6 must fail
+EXPECT = {"good": ["PASS"] * 6, "good_sed": ["PASS"] * 6, "bad": ["PASS"] + ["FAIL"] * 5}
 NOTES = {"good": "scripted correct migration", "bad": "scripted broken migration",
          "good_sed": "regression: the default is set via a `sed` whose command text mentions `provider = \"parallel\"` while writing exa/tavily (check 2 must not be fooled)"}
 
@@ -36,10 +37,10 @@ def main() -> int:
         for variant in ("good", "bad", "good_sed"):
             run_dir, g = run(app, variant)
             verdicts = re.findall(r"^\| \d \| .*? \| \*\*(\w+)\*\* \|", g, re.M)
-            good = len(verdicts) == 6 and all(v == EXPECT[variant] for v in verdicts)
+            good = verdicts == EXPECT[variant]
             ok &= good
             body = "\n".join(l for l in g.splitlines() if l.startswith("|"))
-            sections.append(f"## {app} app, mock '{variant}': {NOTES[variant]}\n\nExpected all {EXPECT[variant]}: **{'as expected' if good else 'MISMATCH'}**\n\n{body}\n")
+            sections.append(f"## {app} app, mock '{variant}': {NOTES[variant]}\n\nExpected {' '.join(EXPECT[variant])}: **{'as expected' if good else 'MISMATCH'}**\n\n{body}\n")
     head = ("# MOCK end-to-end dry run (NOT real results)\n\n> **MOCK DATA.** The \"agent\" is a scripted fake model (`harness/mock_anthropic.py`, `validation/mock_scenarios.py`) and "
             "the search APIs are local stubs (`graders/stub_search.py`). Nothing here says anything about Parallel's onboarding or any real agent. "
             "It shows that the real Claude Code CLI driver, scripted answers, isolated workspace, proxy capture, file-state evidence and graders work end to end, at $0, with no counted agent runs.\n\n"
