@@ -57,8 +57,16 @@ class Proxy:
             "PYTHONPATH": str(ROOT),
         }
         mitmdump = ROOT / ".venv" / "bin" / "mitmdump"
+        # Cloud sandboxes only reach the internet through an egress proxy: chain mitmdump to it.
+        upstream = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+        up_args = []
+        if upstream:
+            up_args = ["--mode", f"upstream:{upstream}"]
+            ca = os.environ.get("SSL_CERT_FILE")
+            if ca:
+                up_args += ["--set", f"ssl_verify_upstream_trusted_ca={ca}"]
         self.proc = subprocess.Popen(
-            [str(mitmdump), "--listen-host", "127.0.0.1", "-p", str(self.port),
+            [str(mitmdump), *up_args, "--listen-host", "127.0.0.1", "-p", str(self.port),
              "--set", f"confdir={MITM_CONF}", "--allow-hosts", ALLOW_HOSTS,
              "--set", "termlog_verbosity=warn", "--set", "connection_strategy=lazy", "--set", "flow_detail=0",
              "-s", str(ROOT / "harness" / "proxy_addon.py")],
