@@ -154,3 +154,11 @@ Workspaces under `/tmp/w*` are left for grading; delete them after grading.
 - Parallel's instructions are fetched live by the agent and are not pinned.
 - Haiku is cheaper but weaker than what most users run; a finding should be confirmed
   with one Sonnet run before using it.
+
+## Keys: local and cloud
+
+Keys are never committed. `load_keys` reads, first hit wins: process env vars, `./.env`, then the file named by `PE_KEYS_FILE`.
+
+- **Local:** `cp .env.example .env` and fill it, or `export PE_KEYS_FILE=/path/to/other/.env`.
+- **Cloud (Claude Code on the web):** use the `parallel_experiment` environment (network allowlist for the search APIs, Parallel, GitHub and Anthropic). Add `EXA_API_KEY`, `TAVILY_API_KEY`, `PARALLEL_API_KEY` and `ANTHROPIC_API_KEY` under that environment's variables in Settings. Values are visible to anyone who can use the environment and to commands in its sessions, so use a dedicated, spend-limited Anthropic key.
+- Check a setup with `uv run python -m harness.check_env` (key names and host reachability only).
