@@ -35,7 +35,7 @@ def build_script(provider: str) -> list[Step]:
              "No, don't send anything to support."),
         Step("goal",
              _r(r"how would you like to use parallel"),
-             _r(r"new or existing app|existing app|switch from another"),
+             _r(r"new or existing app|existing app|add to an app|switch from another|switch an app"),
              "2. Add Parallel to a new or existing app"),
         Step("approve_plan",
              _r(r"\bplan\b.{0,600}(go ahead|proceed|approve|sound good|ok\?|okay\?)|\b(go ahead|shall i proceed|should i proceed|ready to proceed|approve (this|the) plan)\b.{0,40}\?"),
