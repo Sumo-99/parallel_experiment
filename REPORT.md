@@ -105,7 +105,7 @@ failure of the onboarding steps, and my grader treated undated as in-date (a gra
 
 # Follow-up (same day): Sonnet confirmation and a fix test
 
-Spend after the follow-ups: 11 of 12 agent runs (8 counted: 6 Haiku + 2 Sonnet... plus 1 patched Haiku = 9 counted; 2 more were harness-fault stops, see below). Search spend about $0.75 of $10.
+Spend after the follow-ups: 11 of 12 agent runs used (9 counted: 6 Haiku, 2 Sonnet, 1 patched Haiku; 2 stopped by harness faults and not counted). Search spend about $0.75 of $10.
 
 Harness changes first: the scripted user no longer answers anything after the agent's final report (this removes the "yes, go ahead" side-work seen in caveat 3 above), and the goal-question matcher now accepts the label "Add to an app". Sonnet's first Tavily run (`…143949-tavily-1fa5`) stopped on that label in 7 seconds before doing anything; it is a harness fault and not counted.
 
