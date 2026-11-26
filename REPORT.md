@@ -100,3 +100,37 @@ failure of the onboarding steps, and my grader treated undated as in-date (a gra
 - Whether the proposed wording change fixes it.
 - Result quality versus the old provider (no side-by-side was run).
 - Live Exa/Tavily comparison of date filtering on undated pages.
+
+---
+
+# Follow-up (same day): Sonnet confirmation and a fix test
+
+Spend after the follow-ups: 11 of 12 agent runs (8 counted: 6 Haiku + 2 Sonnet... plus 1 patched Haiku = 9 counted; 2 more were harness-fault stops, see below). Search spend about $0.75 of $10.
+
+Harness changes first: the scripted user no longer answers anything after the agent's final report (this removes the "yes, go ahead" side-work seen in caveat 3 above), and the goal-question matcher now accepts the label "Add to an app". Sonnet's first Tavily run (`…143949-tavily-1fa5`) stopped on that label in 7 seconds before doing anything; it is a harness fault and not counted.
+
+## Sonnet confirmation: the finding holds (2 of 2)
+
+| Run | App | Old provider after run | Real queries tested on Parallel before the switch | First edit that swapped the client |
+|---|---|---|---|---|
+| `20261126-143858-exa-2256` | Exa | removed | 0 of 10 | t=36 s (first Parallel call t=46 s) |
+| `20261126-144121-tavily-0936` | Tavily | removed | 0 of 10 | t=50 s (first Parallel call t=54 s) |
+
+Checks 1, 3, 4 (Tavily), 5 all PASS; check 2 FAIL in both; check 6 came out NEEDS_REVIEW only because the "files changed" list was not exhaustive (no false claim found). So on Sonnet 5.5 the agents also replace the old client in the same step as writing the Parallel client and test afterwards. Together with Haiku that is 8 of 8 runs. Two Sonnet runs is a small sample, but it rules out "Haiku quirk".
+
+## Fix test: the rule moved into the onboarding steps (1 run, Haiku, Tavily)
+
+Patch: `patches/skill_keep_old_provider.diff` (applied by `patches/skill_keep_old_provider.py`). Three small edits to Onboarding in the installed `parallel-api` SKILL.md:
+1. The plan message now includes: "<provider> stays in place until Parallel passes a test on the project's real queries; only then do I switch the default."
+2. Step 3 says to add Parallel next to the old provider without touching its code path, run Verify, then run every line of the real query file through Parallel, and switch the default only if they pass.
+3. The final report template gets an "Old provider: kept as a fallback, or removed (and how many real queries passed first)" line.
+
+How it was served: the agent installs the skill with `npx skills add`; a post-tool hook in the harness rewrote the installed file right after that command, before the agent read it. The agent saw nothing unusual (it fetched agents.md live and unchanged). Not a network rewrite, because the install comes from GitHub over git.
+
+Result (`20261126-143957-tavily-c49b`, Haiku 5.5): **all six checks PASS.** The agent kept Tavily, added a separate Parallel provider behind a `--provider` flag, ran all 10 watchlist queries (40 results) through Parallel, then switched the default; 10 of 10 passed before the switch. It left the cutoff in config but told the user it no longer filters anything. Check 6 NEEDS_REVIEW again only for an incomplete changed-files list.
+
+Reading it fairly: this is one run, on one app, with the model that failed 3 of 3 before. It is strong evidence that the instruction placement is the cause (same model, same app, same script, the only change is the wording), but it is not proof of a fix; I would run it two more times before claiming that. Note also that the approved plan now states the keep-until-passed rule, so the user's approval covers it, which is part of why it works.
+
+## Not done in this round
+
+Steps 3 and 4 of the coordinator's list (date-filter note with extra probe queries; one-page summary with a screen recording) were not part of the approved "run 1 and 2" and are untouched. The undated-pages observation above stands as written.
