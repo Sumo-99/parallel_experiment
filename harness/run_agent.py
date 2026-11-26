@@ -218,17 +218,21 @@ def main() -> int:
     ap.add_argument("--app", choices=sorted(APP_SPECS), required=True)
     ap.add_argument("--setup-only", action="store_true", help="build the workspace and proxy, run nothing, call no API")
     ap.add_argument("--label", default="")
+    ap.add_argument("--mock", choices=["good", "bad"], help="MOCK end-to-end dry run: scripted fake model (no Anthropic calls), stubbed search APIs; $0, not counted")
     args = ap.parse_args()
     spec = APP_SPECS[args.app]
 
-    run_id = time.strftime("%Y%m%d-%H%M%S") + f"-{args.app}" + (f"-{args.label}" if args.label else "") + "-" + uuid.uuid4().hex[:4]
+    run_id = time.strftime("%Y%m%d-%H%M%S") + ("-MOCK-" + args.mock if args.mock else "") + f"-{args.app}" + (f"-{args.label}" if args.label else "") + "-" + uuid.uuid4().hex[:4]
     run_dir = RUNS / run_id
     run_dir.mkdir(parents=True)
     rec = Recorder(run_dir)
 
     needed = [spec["provider_key"], "PARALLEL_API_KEY"] + ([] if args.setup_only else ["ANTHROPIC_API_KEY"])
     try:
-        keys = load_keys(needed)
+        if args.mock:   # MOCK run: placeholder keys only, nothing real is ever called
+            keys = {k: "placeholder-mock-not-a-key" for k in needed}
+        else:
+            keys = load_keys(needed)
     except Blocked as e:
         if args.setup_only:
             # workspace smoke test only: placeholder keys, no API is ever called in this mode
@@ -239,7 +243,7 @@ def main() -> int:
             print(f"BLOCKED: {e}", file=sys.stderr)
             return 2
 
-    if not args.setup_only:
+    if not args.setup_only and not args.mock:
         try:
             claim_agent_run(run_id, args.app)
         except Blocked as e:
@@ -249,18 +253,25 @@ def main() -> int:
 
     ws = wsmod.create(args.app, keys, base_parent=Path("/tmp"))
     wsmod.snapshot(ws.app_dir, run_dir / "pristine")
-    meta = {"run_id": run_id, "app": args.app, "provider": spec["provider"], "model": AGENT_MODEL,
+    meta = {"run_id": run_id, "app": args.app, "provider": spec["provider"], "model": "(MOCK scripted fake model)" if args.mock else AGENT_MODEL, "mock": bool(args.mock),
             "setup_prompt": SETUP_PROMPT, "workspace": str(ws.base), "app_dir": str(ws.app_dir),
             "search_spend_before_usd": search_spend_usd(), "setup_only": args.setup_only,
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     (run_dir / "meta.json").write_text(json.dumps(meta, indent=2))
 
-    proxy = Proxy(run_dir / "proxy.jsonl", run_id).start()
+    proxy = Proxy(run_dir / "proxy.jsonl", run_id, stub=bool(args.mock)).start()
     proxy.write_ca_bundle(ws.ca_bundle)
     status = "setup_only"
     try:
         if not args.setup_only:
             env = agent_env(ws, proxy, keys)
+            if args.mock:
+                from harness.mock_anthropic import MockAnthropic
+                from validation.mock_scenarios import scenario
+                qf = ws.app_dir / spec["queries_file"]
+                qs = [l.strip() for l in qf.read_text().splitlines() if l.strip() and not l.startswith("#")]
+                mock = MockAnthropic(scenario(args.mock, qs)).start()
+                env["ANTHROPIC_BASE_URL"] = mock.url
             result = asyncio.run(asyncio.wait_for(drive(ws, run_dir, rec, env, spec["provider"]), RUN_TIMEOUT_S))
             status = result["stop_reason"]
             meta.update(result)
@@ -290,7 +301,7 @@ def main() -> int:
 
     meta.update({"status": status, "finished": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "search_spend_after_usd": search_spend_usd()})
     (run_dir / "meta.json").write_text(json.dumps(meta, indent=2))
-    if not args.setup_only:
+    if not args.setup_only and not args.mock:
         finish_agent_run(run_id, status)
     print(json.dumps({"run_id": run_id, "status": status, "run_dir": str(run_dir), "workspace": str(ws.base)}, indent=2))
     return 0
