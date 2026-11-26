@@ -1,0 +1,17 @@
+# secrets
+.env
+.env.*
+!.env.example
+# run outputs and local state
+runs/
+state/
+# envs and caches
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+apps/*/out/
+apps/*/reports/
+# third-party clone; commit hash is recorded in research/SETUP_PROMPT.md
+research/parallel-agent-skills/
+.DS_Store

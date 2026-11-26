@@ -1,0 +1,47 @@
+{
+  "requestId": "b1f0c9d6a2e84e0f9c3b7a51d2e6f004",
+  "resolvedSearchType": "neural",
+  "results": [
+    {
+      "id": "https://techcrunch.com/2026/10/14/form-rival-long-duration-storage-series-b/",
+      "title": "Long-duration storage startup lands $120M Series B to scale iron-air pilots",
+      "url": "https://techcrunch.com/2026/10/14/form-rival-long-duration-storage-series-b/",
+      "publishedDate": "2026-10-14T13:05:00.000Z",
+      "author": "Tim De Chant",
+      "score": 0.31,
+      "highlights": ["The company said the round will fund two 10 MW pilots with Midwestern utilities.", "Investors include several strategic utility funds."],
+      "highlightScores": [0.44, 0.38]
+    },
+    {
+      "id": "https://www.canarymedia.com/articles/energy-storage/utilities-sign-up-for-100-hour-batteries",
+      "title": "Utilities are signing up for 100-hour batteries",
+      "url": "https://www.canarymedia.com/articles/energy-storage/utilities-sign-up-for-100-hour-batteries",
+      "publishedDate": "2026-09-22T10:00:00.000Z",
+      "author": "Julian Spector",
+      "score": 0.24,
+      "highlights": ["Three utilities announced procurement plans for multi-day storage this quarter."],
+      "highlightScores": [0.35]
+    },
+    {
+      "id": "https://www.utilitydive.com/news/ldes-council-report-2026/",
+      "title": "LDES Council report sizes the multi-day storage market",
+      "url": "https://www.utilitydive.com/news/ldes-council-report-2026/",
+      "publishedDate": "2026-09-08T16:30:00.000Z",
+      "author": null,
+      "score": 0.19,
+      "highlights": ["The report projects 8 TW of long-duration storage by 2040."],
+      "highlightScores": [0.22]
+    },
+    {
+      "id": "https://electrek.co/2026/09/30/home-battery-roundup/",
+      "title": "Home battery roundup: what's new this fall",
+      "url": "https://electrek.co/2026/09/30/home-battery-roundup/",
+      "publishedDate": "2026-09-30T09:12:00.000Z",
+      "author": "Michelle Lewis",
+      "score": 0.12,
+      "highlights": ["A look at residential batteries shipping before winter."],
+      "highlightScores": [0.11]
+    }
+  ],
+  "costDollars": {"total": 0.005}
+}

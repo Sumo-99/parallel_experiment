@@ -1,0 +1,22 @@
+[project]
+name = "vuln-watch"
+version = "1.2.0"
+description = "Daily security-advisory digest for the platform team's dependency stack, using Tavily search."
+requires-python = ">=3.11"
+dependencies = [
+  "tavily-python>=0.5",
+  "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "responses>=0.25"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["vulnwatch"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

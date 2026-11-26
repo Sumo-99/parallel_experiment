@@ -1,0 +1,10 @@
+{
+  "search_id": "search_8c1f2e0b6d7a4f39",
+  "results": [
+    {"url": "https://techcrunch.com/2026/10/14/form-rival-long-duration-storage-series-b/", "title": "Long-duration storage startup lands $120M Series B", "publish_date": "2026-10-14", "excerpts": ["The round will fund two 10 MW pilots."]},
+    {"url": "https://www.canarymedia.com/articles/energy-storage/utilities-sign-up-for-100-hour-batteries", "title": "Utilities are signing up for 100-hour batteries", "publish_date": "2026-09-22", "excerpts": ["Three utilities announced procurement plans."]},
+    {"url": "https://heatmap.news/technology/sodium-ion-explainer", "title": "Why sodium-ion is suddenly everywhere", "publish_date": null, "excerpts": ["Cheaper cathode materials."]}
+  ],
+  "warnings": null,
+  "usage": [{"name": "sku_search", "count": 1}]
+}

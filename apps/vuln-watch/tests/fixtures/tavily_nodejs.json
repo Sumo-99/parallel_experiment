@@ -1,0 +1,33 @@
+{
+  "query": "Node.js security release",
+  "follow_up_questions": null,
+  "answer": null,
+  "images": [],
+  "results": [
+    {
+      "url": "https://github.com/nodejs/node/security/advisories/GHSA-r3hp-6w2c-7c4m",
+      "title": "HTTP request smuggling via chunked extensions · nodejs/node",
+      "content": "Affects Node.js 22.x and 24.x. Patched in 22.21.1 and 24.11.1.",
+      "score": 0.71,
+      "published_date": "2026-11-04",
+      "raw_content": null
+    },
+    {
+      "url": "https://www.cisa.gov/news-events/alerts/2026/11/05/nodejs-releases-security-updates",
+      "title": "Node.js Releases Security Updates | CISA",
+      "content": "Node.js released security updates to address vulnerabilities in multiple versions...",
+      "score": 0.66,
+      "raw_content": null
+    },
+    {
+      "url": "https://openssf.org/blog/2026/10/30/securing-the-npm-ecosystem/",
+      "title": "Securing the npm ecosystem - OpenSSF",
+      "content": "An update on trusted publishing adoption across npm...",
+      "score": 0.38,
+      "published_date": "2026-10-30",
+      "raw_content": null
+    }
+  ],
+  "response_time": 0.94,
+  "request_id": "0a9b8c7d-6e5f-4a3b-9c2d-1e0f9a8b7c6d"
+}

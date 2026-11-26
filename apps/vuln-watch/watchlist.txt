@@ -1,0 +1,11 @@
+# Advisory searches for the dependencies we ship. One per line.
+OpenSSL vulnerability advisory
+Node.js security release
+PostgreSQL CVE security update
+Kubernetes kubelet privilege escalation CVE
+nginx HTTP/2 vulnerability
+Python requests library CVE
+Redis remote code execution vulnerability
+log4j new vulnerability disclosure
+npm package supply chain attack malware
+Linux kernel privilege escalation exploited in the wild

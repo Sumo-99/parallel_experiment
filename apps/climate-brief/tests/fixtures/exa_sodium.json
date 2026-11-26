@@ -1,0 +1,36 @@
+{
+  "requestId": "6c2a9f71d3b84c5e8e1f0b9a7d4c2e11",
+  "resolvedSearchType": "neural",
+  "results": [
+    {
+      "id": "https://electrek.co/2026/10/02/sodium-ion-cell-plant-north-carolina/",
+      "title": "Sodium-ion cell maker picks North Carolina for first US plant",
+      "url": "https://electrek.co/2026/10/02/sodium-ion-cell-plant-north-carolina/",
+      "publishedDate": "2026-10-02T14:00:00.000Z",
+      "author": "Fred Lambert",
+      "score": 0.28,
+      "highlights": ["The 4 GWh plant is expected to start production in 2028."],
+      "highlightScores": [0.41]
+    },
+    {
+      "id": "https://www.canarymedia.com/articles/energy-storage/utilities-sign-up-for-100-hour-batteries",
+      "title": "Utilities are signing up for 100-hour batteries",
+      "url": "https://www.canarymedia.com/articles/energy-storage/utilities-sign-up-for-100-hour-batteries",
+      "publishedDate": "2026-09-22T10:00:00.000Z",
+      "author": "Julian Spector",
+      "score": 0.2,
+      "highlights": ["Sodium chemistries were mentioned as a lower-cost option."],
+      "highlightScores": [0.2]
+    },
+    {
+      "id": "https://heatmap.news/technology/sodium-ion-explainer",
+      "title": "Why sodium-ion is suddenly everywhere",
+      "url": "https://heatmap.news/technology/sodium-ion-explainer",
+      "publishedDate": null,
+      "author": "Emily Pontecorvo",
+      "highlights": ["Cheaper cathode materials and a looser supply chain."],
+      "highlightScores": [0.3]
+    }
+  ],
+  "costDollars": {"total": 0.005}
+}
