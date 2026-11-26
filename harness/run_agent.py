@@ -107,6 +107,9 @@ def _text_of(question_input: dict) -> str:
     return "\n".join(parts)
 
 
+OPTS = {"model": AGENT_MODEL, "patched_skill": False}
+
+
 async def drive(ws, run_dir: Path, rec: Recorder, env: dict, provider: str) -> dict:
     from claude_agent_sdk import (
         AssistantMessage, ClaudeAgentOptions, ClaudeSDKClient, HookMatcher, PermissionResultAllow, PermissionResultDeny,
@@ -150,13 +153,21 @@ async def drive(ws, run_dir: Path, rec: Recorder, env: dict, provider: str) -> d
                                            "permissionDecisionReason": "Permission denied."}}
         return {}
 
+    async def post_tool_patch(input_data, tool_use_id, context):
+        """Fix-test only: patch the freshly installed skill file before the agent reads it (the agent sees no hint)."""
+        cmd = json.dumps(input_data.get("tool_input", {}))
+        if OPTS["patched_skill"] and "skills add" in cmd:
+            from patches.skill_keep_old_provider import patch_tree
+            rec.log("skill_patched", files=patch_tree(ws.home))
+        return {}
+
     options = ClaudeAgentOptions(
-        model=AGENT_MODEL,
+        model=OPTS["model"],
         cwd=str(ws.app_dir),
         env=env,
         permission_mode="default",
         can_use_tool=can_use_tool,
-        hooks={"PreToolUse": [HookMatcher(matcher=None, hooks=[pre_tool_guard])]},
+        hooks={"PreToolUse": [HookMatcher(matcher=None, hooks=[pre_tool_guard])], "PostToolUse": [HookMatcher(matcher=None, hooks=[post_tool_patch])]},
         system_prompt={"type": "preset", "preset": "claude_code"},
         setting_sources=["user", "project", "local"],
         max_budget_usd=AGENT_BUDGET_USD,
@@ -201,7 +212,7 @@ async def drive(ws, run_dir: Path, rec: Recorder, env: dict, provider: str) -> d
                 break
             last_text = "\n".join(turn_text).strip()
             step = match_step(script, last_text) if last_text else None
-            if step and round_no < MAX_ROUNDS:
+            if step and round_no < MAX_ROUNDS and not state["final_report_seen"]:
                 state["answered"].append(step.name)
                 rec.log("scripted_answer", channel="text", step=step.name, question_tail=last_text[-1500:], answer=step.text_answer)
                 rec.log("user_message", text=step.text_answer, source=f"script:{step.name}")
@@ -226,8 +237,11 @@ def main() -> int:
     ap.add_argument("--app", choices=sorted(APP_SPECS), required=True)
     ap.add_argument("--setup-only", action="store_true", help="build the workspace and proxy, run nothing, call no API")
     ap.add_argument("--label", default="")
+    ap.add_argument("--model", default=AGENT_MODEL, help="agent-under-test model")
+    ap.add_argument("--patched-skill", action="store_true", help="after the skill is installed, apply patches/skill_keep_old_provider.py to the installed SKILL.md")
     ap.add_argument("--mock", choices=["good", "bad", "good_sed"], help="MOCK end-to-end dry run: scripted fake model (no Anthropic calls), stubbed search APIs; $0, not counted")
     args = ap.parse_args()
+    OPTS.update(model=args.model, patched_skill=args.patched_skill)
     spec = APP_SPECS[args.app]
 
     run_id = time.strftime("%Y%m%d-%H%M%S") + ("-MOCK-" + args.mock if args.mock else "") + f"-{args.app}" + (f"-{args.label}" if args.label else "") + "-" + uuid.uuid4().hex[:4]
@@ -261,7 +275,7 @@ def main() -> int:
 
     ws = wsmod.create(args.app, keys, base_parent=Path("/tmp"))
     wsmod.snapshot(ws.app_dir, run_dir / "pristine")
-    meta = {"run_id": run_id, "app": args.app, "provider": spec["provider"], "model": "(MOCK scripted fake model)" if args.mock else AGENT_MODEL, "mock": bool(args.mock),
+    meta = {"run_id": run_id, "app": args.app, "provider": spec["provider"], "model": "(MOCK scripted fake model)" if args.mock else args.model, "patched_skill": args.patched_skill, "mock": bool(args.mock),
             "setup_prompt": SETUP_PROMPT, "workspace": str(ws.base), "app_dir": str(ws.app_dir),
             "search_spend_before_usd": search_spend_usd(), "setup_only": args.setup_only,
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
